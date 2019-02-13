@@ -1,11 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class Player : SimulatedObject {
 
     Sim_GameObject sim;
     Transform t;
+
+    public TextMeshProUGUI inputField;
+    
 
     //string testString = "MoveNorth();\nMoveEast();\nMoveSouth();\nMoveEast();";
     //public string testString = "Player.health = 5;";
@@ -49,7 +54,7 @@ public class Player : SimulatedObject {
 
         sim = new Sim_GameObject("Player", simFunctions, simVariables);
 
-        StartCoroutine(RunCode(sim));
+        //StartCoroutine(RunCode(sim));
     }
 
     // Update is called once per frame
@@ -57,6 +62,13 @@ public class Player : SimulatedObject {
     {
 		
 	}
+
+    public void Run()
+    {
+        testString = inputField.text.ToString();
+        Debug.Log(testString);
+        StartCoroutine(RunCode(sim));
+    }
 
     string MoveNorth(string arg)
     {
