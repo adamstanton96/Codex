@@ -159,7 +159,6 @@ public class Player : SimulatedObject {
             }
             else
             {
-                Debug.Log("Not A Function");
                 //Check if the first item references an existing variable.
                 Sim_Variable variable = FindSimVariable(firstItem, sim.variables);
                 if (variable != null)
@@ -182,7 +181,7 @@ public class Player : SimulatedObject {
                     }
                     else
                     {
-                        Debug.Log("Not A Variable");
+                        //Debug.Log("Not A Variable");
                     }
                 }
                 else
