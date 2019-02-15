@@ -10,11 +10,18 @@ public class Player : SimulatedObject {
     Transform t;
 
     public TextMeshProUGUI inputField;
-    
+
+    public List<GameObject> SpawnBlock;
+    public List<PopupBox> popups;
+    public List<int> collectiblesNeeded;
+
+    public int stage = 0;
+    public int collectiblesHeld = 0;
 
     //string testString = "MoveNorth();\nMoveEast();\nMoveSouth();\nMoveEast();";
     //public string testString = "Player.health = 5;";
-    string testString = "int var4 = var1 + var2 + var3;\nint var5 = var4 + 10;\nMoveNorth();";
+    //string testString = "int var4 = var1 + var2 + var3;\nint var5 = var4 + 10;\nMoveNorth();";
+    string testString;
 
     List<Sim_Function> simFunctions = new List<Sim_Function>();
     List<Sim_Variable> simVariables = new List<Sim_Variable>();
@@ -26,6 +33,13 @@ public class Player : SimulatedObject {
 
     // Use this for initialization
     void Start ()
+    {
+        Init();
+
+       
+    }
+
+    void Init()
     {
         t = this.gameObject.GetComponent<Transform>();
         //Debug.Log(t.ToString());
@@ -42,6 +56,9 @@ public class Player : SimulatedObject {
         Sim_Function _MoveWest = new Sim_Function("MoveWest", "", "void", "//Moves the player west one space.", MoveWest);
         simFunctions.Add(_MoveWest);
 
+        Sim_Function _NextStage = new Sim_Function("NextStage", "", "void", "//TEMP DEBUG.", NextStage);
+        simFunctions.Add(_NextStage);
+
         Sim_Variable _health = new Sim_Variable("health", "int", "10", "//How much health the player has.");
         simVariables.Add(_health);
 
@@ -49,12 +66,10 @@ public class Player : SimulatedObject {
         simVariables.Add(_var1);
         Sim_Variable _var2 = new Sim_Variable("var2", "int", "2", "//H.");
         simVariables.Add(_var2);
-        Sim_Variable _var3 = new Sim_Variable("var3", "int", "3", "//Hs.");
+        Sim_Variable _var3 = new Sim_Variable("var3", "int", "3", "//H.");
         simVariables.Add(_var3);
 
         sim = new Sim_GameObject("Player", simFunctions, simVariables);
-
-        //StartCoroutine(RunCode(sim));
     }
 
     // Update is called once per frame
@@ -65,10 +80,32 @@ public class Player : SimulatedObject {
 
     public void Run()
     {
+        Reset();
         testString = inputField.text.ToString();
         Debug.Log(testString);
         StartCoroutine(RunCode(sim));
     }
+
+    public void Reset()
+    {
+        collectiblesHeld = 0;
+        t.position = new Vector3(SpawnBlock[stage].transform.position.x, t.position.y, SpawnBlock[stage].transform.position.z);
+        simFunctions.Clear();
+        simVariables.Clear();
+        Init();
+    }
+
+    public void SetupStage()
+    {
+        Reset();
+        popups[stage].gameObject.SetActive(true);
+    }
+
+
+
+
+
+
 
     string MoveNorth(string arg)
     {
@@ -100,7 +137,12 @@ public class Player : SimulatedObject {
 
 
 
-
+    string NextStage(string arg)
+    { 
+        stage++;
+        Debug.Log(stage);
+        return "null";
+    }
 
 
 
@@ -421,12 +463,16 @@ public class Player : SimulatedObject {
         {
             int temp;
             int.TryParse(var.value, out temp);
-            var.value = (temp++).ToString();
+            temp++;
+            Debug.Log(temp);
+            var.value = (temp).ToString();
         }
         else if (subStrings[0] == "--")
         {
             int temp;
             int.TryParse(var.value, out temp);
+            temp--;
+            Debug.Log(temp);
             var.value = (temp--).ToString();
         }
 
