@@ -20,16 +20,48 @@ public class ExitPoint : MonoBehaviour
 
     }
 
-    void OnTriggerEnter(Collider other)
+    //void OnTriggerEnter(Collider other)
+    //{
+    //    Debug.Log("entered");
+    //    if (other.tag == "Player")
+    //    {
+    //        if (player.collectiblesHeld >= player.stages[player.stage].collectibles.Count)
+    //        {
+    //            if (player.stage < player.stages.Count - 1)
+    //            {
+    //                player.stage++;
+    //                player.SetupStage();
+    //            }
+    //            else
+    //            {
+    //                player.gameObject.SetActive(false);
+    //            }
+    //        }
+    //    }
+    //}
+
+    void OnTriggerStay(Collider other)
     {
-        Debug.Log("entered");
+        //Debug.Log("inside");
         if (other.tag == "Player")
         {
-            if (player.collectiblesHeld >= player.collectiblesNeeded[player.stage])
             {
-                player.stage++;
-                player.SetupStage();
+                NextStage();
             }
         }
     }
+
+    void NextStage()
+    {
+        if (player.stage < player.stages.Count - 1)
+        {
+            player.stage++;
+            player.SetupStage();
+        }
+        else
+        {
+            player.s.LoadScene("MainMenu");
+        }
+    }
 }
+

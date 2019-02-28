@@ -4,19 +4,33 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+public class ForLoop
+{
+    int index;
+    string codeString;
+}
+
 public class Player : SimulatedObject {
 
     Sim_GameObject sim;
     Transform t;
+    public SceneController s;
 
     public TextMeshProUGUI inputField;
+    public TextMeshProUGUI outputField;
+    public TextMeshProUGUI infoField;
 
-    public List<GameObject> SpawnBlock;
-    public List<PopupBox> popups;
-    public List<int> collectiblesNeeded;
+    public List<Stage> stages;
 
     public int stage = 0;
     public int collectiblesHeld = 0;
+
+    //string defaultOutputString = "Code Output:\n";
+    //string outputString = "Code Output:\n";
+
+    string defaultOutputString = "";
+    string outputString = "";
+    string password = "";
 
     //string testString = "MoveNorth();\nMoveEast();\nMoveSouth();\nMoveEast();";
     //public string testString = "Player.health = 5;";
@@ -25,6 +39,8 @@ public class Player : SimulatedObject {
 
     List<Sim_Function> simFunctions = new List<Sim_Function>();
     List<Sim_Variable> simVariables = new List<Sim_Variable>();
+
+    bool runComplete = false;
 
     public override Sim_GameObject GetSim()
     {
@@ -35,14 +51,13 @@ public class Player : SimulatedObject {
     void Start ()
     {
         Init();
-
-       
+        FullReset();
+        t.position = new Vector3(stages[stage].spawnBlock.transform.position.x, t.position.y, stages[stage].spawnBlock.transform.position.z);
     }
 
     void Init()
     {
         t = this.gameObject.GetComponent<Transform>();
-        //Debug.Log(t.ToString());
 
         Sim_Function _MoveNorth = new Sim_Function("MoveNorth", "", "void", "//Moves the player north one space.", MoveNorth);
         simFunctions.Add(_MoveNorth);
@@ -56,18 +71,8 @@ public class Player : SimulatedObject {
         Sim_Function _MoveWest = new Sim_Function("MoveWest", "", "void", "//Moves the player west one space.", MoveWest);
         simFunctions.Add(_MoveWest);
 
-        Sim_Function _NextStage = new Sim_Function("NextStage", "", "void", "//TEMP DEBUG.", NextStage);
+        Sim_Function _NextStage = new Sim_Function("NextStage", "", "void", "//For Debug.", NextStage);
         simFunctions.Add(_NextStage);
-
-        Sim_Variable _health = new Sim_Variable("health", "int", "10", "//How much health the player has.");
-        simVariables.Add(_health);
-
-        Sim_Variable _var1 = new Sim_Variable("var1", "int", "1", "//H.");
-        simVariables.Add(_var1);
-        Sim_Variable _var2 = new Sim_Variable("var2", "int", "2", "//H.");
-        simVariables.Add(_var2);
-        Sim_Variable _var3 = new Sim_Variable("var3", "int", "3", "//H.");
-        simVariables.Add(_var3);
 
         sim = new Sim_GameObject("Player", simFunctions, simVariables);
     }
@@ -75,21 +80,37 @@ public class Player : SimulatedObject {
     // Update is called once per frame
     void Update ()
     {
-		
-	}
+        infoField.text = this.ToString();
+        outputField.text = this.outputString;
+        //Debug.Log(this.outputString);
+    }
 
     public void Run()
     {
-        Reset();
+        PartialReset();
         testString = inputField.text.ToString();
-        Debug.Log(testString);
-        StartCoroutine(RunCode(sim));
+        StartCoroutine(RunCode(sim, testString));
     }
 
-    public void Reset()
+    public void FullReset()
     {
+        stages[stage].RefreshStage();
+        PlayerReset();
+    }
+
+    public void PartialReset()
+    { 
+        stages[stage].ResetCollectibles();
+        PlayerReset();
+    }
+
+    void PlayerReset()
+    {
+        password = "";
+        outputString = defaultOutputString;
         collectiblesHeld = 0;
-        t.position = new Vector3(SpawnBlock[stage].transform.position.x, t.position.y, SpawnBlock[stage].transform.position.z);
+        stages[stage].ResetCollectibles();
+        t.position = new Vector3(stages[stage].spawnBlock.transform.position.x, t.position.y, stages[stage].spawnBlock.transform.position.z);
         simFunctions.Clear();
         simVariables.Clear();
         Init();
@@ -97,8 +118,7 @@ public class Player : SimulatedObject {
 
     public void SetupStage()
     {
-        Reset();
-        popups[stage].gameObject.SetActive(true);
+        FullReset();
     }
 
 
@@ -147,6 +167,21 @@ public class Player : SimulatedObject {
 
 
 
+    public override string ToString()
+    {
+        string returnStr = "Functions:\n";
+        for (int i = 0; i < simFunctions.Count; i++)
+        {
+            returnStr += simFunctions[i].ToString();
+        }
+
+        returnStr += "\n\nVariables:\n";
+        for (int i = 0; i < simVariables.Count; i++)
+        {
+            returnStr += simVariables[i].ToString();
+        }
+        return returnStr;
+    }
 
 
 
@@ -175,34 +210,35 @@ public class Player : SimulatedObject {
 
 
 
-
-    public IEnumerator RunCode(Sim_GameObject sim)
+    public IEnumerator RunCode(Sim_GameObject sim, string codeString)
     {
         string[] CodeLines = null;
-        CodeLines = testString.Split('\n');
-        Debug.Log(CodeLines.Length);
+        CodeLines = codeString.Split('\n');
+        //Debug.Log(CodeLines.Length);
 
         for (int x = 0; x < CodeLines.Length; x++)
         {
-            Debug.Log(CodeLines[x]);
+            runComplete = false;
+
+            //Debug.Log(CodeLines[x]);
             string firstItem = "", remainder = "";
             string[] subStrings = CodeLines[x].Split('(', ' ');
 
             if (subStrings.Length == 0)
             {
-                Debug.Log("Error");
+                Debug.Log("Error no arguments found.");
             }
             else if (subStrings.Length == 1)
             {
                 firstItem = subStrings[0];
-                Debug.Log(firstItem);
+                //Debug.Log(firstItem);
             }
             else
             {
                 firstItem = subStrings[0];
                 remainder = concatenateSplitString(1, subStrings, " ");
-                Debug.Log(firstItem);
-                Debug.Log(remainder);
+                //Debug.Log(firstItem);
+                //Debug.Log(remainder);
             }
 
             //Check if the first item references a call to an existing function or method.
@@ -250,7 +286,7 @@ public class Player : SimulatedObject {
                     }
                     else if (firstItem == "bool")
                     {
-                        //createBool();
+                        createBool(remainder);
                     }
                     else if (firstItem == "char")
                     {
@@ -262,20 +298,114 @@ public class Player : SimulatedObject {
                     }
                     else
                     {
-                        Debug.Log("Not A Variable");
+                        //Debug.Log("Not A Variable");
+                        if(firstItem == "printf")
+                        {
+                            SimPrintf(remainder);
+                        }
+                        else if(firstItem == "for")
+                        {
+                            //Break down the contents of the brackets.
+                            //Concatenate all code within the braces, store as string.
+                            //Loop the coroutine run and yield based on values deciphered.
+
+                            string newString = "printf(\"this is a for loop\");\nprintf(\"this is a for loop2\")\nprintf(\"this is a for loop3\")";
+
+                            StartCoroutine(RunCode(sim, newString));
+                            yield return new WaitUntil(() => runComplete == true);
+
+                        }
+                        else if (firstItem == "while")
+                        {
+                            //Break down the contents of the brackets.
+                            //Concatenate all code within the braces, store as string.
+                            //Loop the coroutine run and yield based on values deciphered.
+
+                            string newString = "printf(\"this is a for loop\");\nprintf(\"this is a for loop2\")\nprintf(\"this is a for loop3\")";
+
+                            StartCoroutine(RunCode(sim, newString));
+                            yield return new WaitUntil(() => runComplete == true);
+
+                        }
+                        else if (firstItem == "if")
+                        {
+                            //Break down the contents of the brackets.
+                            //Concatenate all code within the braces, store as string.
+                            //Loop the coroutine run and yield based on values deciphered.
+
+                            //for(int i = 0; i <= 5; i++)
+
+                            subStrings = remainder.Split(';');
+                            remainder = concatenateSplitString(1, subStrings, " ");
+
+                            string newString = "printf(\"this is a for loop\");\nprintf(\"this is a for loop2\")\nprintf(\"this is a for loop3\")";
+
+                            StartCoroutine(RunCode(sim, newString));
+                            yield return new WaitUntil(() => runComplete == true);
+
+                        }
+                        else if (firstItem == "")
+                        {
+                            Debug.Log("Not an error, just some whitespace.");
+                        }
+                        else
+                        {
+                            Debug.Log("Error");
+                            yield break;
+                        }
                     }
                 }
             }
 
-            //Temp
-            yield return new WaitForSeconds(1.0f);
+            if(runComplete == false)
+                yield return new WaitForSeconds(1.0f);
         }
+
+        runComplete = true;
+        yield break;
     }
 
 
+    void SimPrintf(string remainder)
+    {
+        //Debug.Log("PRINTF");
+        string stringToPrint = GetSimPrintString(remainder);
+        //Debug.Log(stringToPrint);
+        this.outputString = this.outputString + stringToPrint + '\n';
+        //Debug.Log(outputString);
+        password = stringToPrint;
+    }
 
+    string GetSimPrintString(string remainder)
+    {
+        string returnString = "";
+        string[] subStrings = remainder.Split('+', ')');
 
+        for (int i = 0; i < subStrings.Length; i++)
+        {
+            string[] temps = subStrings[i].Split(' ');
+            string temp = concatenateSplitString(0, temps);
+            Sim_Variable variable = FindSimVariable(temp, sim.variables);
+            if (variable != null)
+            {
+                returnString += variable.value;
+            }
+            else
+            {
+                string[] subSubStrings = subStrings[i].Split('\"');
+                if(subSubStrings.Length != 3)
+                {
+                    //Debug.Log("Error in printf, string count " + subSubStrings.Length);
+                }
+                else
+                {
+                    returnString += subSubStrings[1];
+                }
+            }
+        }
 
+        return returnString;
+    }
 
 
     Sim_Variable FindSimVariable(string name, List<Sim_Variable> list)
@@ -612,6 +742,11 @@ public class Player : SimulatedObject {
 
     string createBool(string remainder)
     {
+        string[] subStrings = remainder.Split(' ', ';');
+        remainder = concatenateSplitString(1, subStrings, " ");
+        Debug.Log(subStrings[2]);
+        createBool(subStrings[0], subStrings[2]);
+
         return "";
     }
 
@@ -702,4 +837,21 @@ public class Player : SimulatedObject {
         return var.type == "string";
     }
 
+
+
+
+
+
+
+
+
+    public string GetPassword()
+    {
+        return this.password;
+    }
+
+    public string GetOutputString()
+    {
+        return this.outputString;
+    }
 }

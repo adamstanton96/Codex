@@ -11,8 +11,8 @@ public class Collectible : MonoBehaviour
 	void Start ()
     {
         // add isTrigger
-        var boxCollider = gameObject.AddComponent<BoxCollider>();
-        boxCollider.isTrigger = true;
+        //var boxCollider = gameObject.AddComponent<BoxCollider>();
+        //boxCollider.isTrigger = true;
     }
 
     // Update is called once per frame

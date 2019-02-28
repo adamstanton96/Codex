@@ -16,7 +16,7 @@ public class PopupBox : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
     {
-        text.text = dialog[0];
+
 	}
 	
 	// Update is called once per frame
@@ -24,6 +24,12 @@ public class PopupBox : MonoBehaviour {
     {
 		
 	}
+
+    public void Init()
+    {
+        index = 0;
+        text.text = dialog[index];
+    }
 
     public void NextPressed()
     {
