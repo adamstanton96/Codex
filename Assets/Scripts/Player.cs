@@ -321,11 +321,6 @@ public class Player : SimulatedObject {
                             //Concatenate all code within the braces, store as string.
                             //Loop the coroutine run and yield based on values deciphered.
 
-                            string newString = "printf(\"this is a for loop\");\nprintf(\"this is a for loop2\")\nprintf(\"this is a for loop3\")";
-
-                            StartCoroutine(RunCode(sim, newString));
-                            yield return new WaitUntil(() => runComplete == true);
-
                         }
                         else if (firstItem == "if")
                         {
@@ -335,16 +330,100 @@ public class Player : SimulatedObject {
 
                             //for(int i = 0; i <= 5; i++)
 
-                            subStrings = remainder.Split(';');
-                            remainder = concatenateSplitString(1, subStrings, " ");
+                            Debug.Log("Entered sim if");
 
-                            string newString = "printf(\"this is a for loop\");\nprintf(\"this is a for loop2\")\nprintf(\"this is a for loop3\")";
 
-                            StartCoroutine(RunCode(sim, newString));
-                            yield return new WaitUntil(() => runComplete == true);
+                            string codeBlock = "";
+                            int codeBlockEnd;
+
+                            subStrings = remainder.Split(' ', '(' , ')');
+
+                            firstItem = subStrings[0];
+
+                            bool conditionMet = false;
+
+                            Sim_Variable initial = FindSimVariable(firstItem, sim.variables);
+                            if(initial != null)
+                            {
+                                if(initial.type == "int")
+                                {
+                                    Debug.Log("Entered sim if 2");
+                                    conditionMet = SimulatedIntComparison(firstItem, subStrings[1], subStrings[2]);
+                                }
+                                else if (initial.type == "bool")
+                                {
+                                    conditionMet = SimulatedBoolComparison(firstItem, subStrings[1], subStrings[2]);
+                                }
+                                else if (initial.type == "char")
+                                {
+                                    conditionMet = SimulatedCharComparison(firstItem, subStrings[1], subStrings[2]);
+                                }
+                                else if (initial.type == "string")
+                                {
+                                    conditionMet = SimulatedStringComparison(firstItem, subStrings[1], subStrings[2]);
+                                }
+                                else
+                                {
+                                    //break error
+                                }
+                            }
+                            else
+                            {
+                                //determine is int, or other stuff
+                            }
+
+
+                            subStrings = CodeLines[x + 1].Split(' ', '\n');
+                            firstItem = subStrings[0];
+                            if(firstItem == "{")
+                            {
+                                bool closedBraces = false;
+                                int startIndex = x + 1;
+                                int endIndex = x + 1;
+                                for (int i = startIndex; i < CodeLines.Length; i++)
+                                {
+                                    endIndex = i;
+                                    subStrings = CodeLines[i].Split(' ', '\n');
+                                    firstItem = subStrings[0];
+                                    if (firstItem == "}")
+                                    {
+                                        Debug.Log(conditionMet);
+                                        closedBraces = true;
+                                        break;
+                                    }
+                                }
+
+
+                                if(closedBraces)
+                                {
+                                    codeBlockEnd = endIndex;
+                                    for(int i = startIndex; i < endIndex; i++)
+                                    {
+                                        codeBlock += CodeLines[i] + '\n';
+                                    }
+
+                                    if (conditionMet)
+                                    {
+                                        StartCoroutine(RunCode(sim, codeBlock));
+                                        yield return new WaitUntil(() => runComplete == true);         
+                                    }
+
+                                    x = codeBlockEnd;
+                                }
+                                else
+                                {
+                                    //break error
+                                }
+
+                            }
+                            else
+                            {
+                                //break error
+                            }
+ 
 
                         }
-                        else if (firstItem == "")
+                        else if (firstItem == "" || firstItem == "{" || firstItem == "}")
                         {
                             Debug.Log("Not an error, just some whitespace.");
                         }
@@ -364,6 +443,15 @@ public class Player : SimulatedObject {
         runComplete = true;
         yield break;
     }
+
+
+
+
+
+
+
+
+
 
 
     void SimPrintf(string remainder)
@@ -499,10 +587,10 @@ public class Player : SimulatedObject {
 
         if(subStrings[0] == "=")
         {
-            Debug.Log(remainder);
-            Debug.Log("BEFORE: " + var.value);
+            //Debug.Log(remainder);
+            //Debug.Log("BEFORE: " + var.value);
             var.value = recursiveIntOperations(remainder).ToString();
-            Debug.Log("AFTER: " + var.value);
+            //Debug.Log("AFTER: " + var.value);
         }
         else if (subStrings[0] == "+=")
         {
@@ -670,13 +758,9 @@ public class Player : SimulatedObject {
         {
             if (isInt(variable))
             {
-                if (int.TryParse(variable.value, out returnVal))
+                if (!int.TryParse(variable.value, out returnVal))
                 {
-
-                }
-                else
-                {
-                    //fuck
+                    //break error
                 }
             }
             else
@@ -685,13 +769,9 @@ public class Player : SimulatedObject {
                 return 0;
             }
         }
-        else if (int.TryParse(varID, out returnVal))
+        else if (!int.TryParse(varID, out returnVal))
         {
-
-        }
-        else
-        {
-            //fuck
+            //break error
         }
 
         if (subStrings.Length > 1)
@@ -730,10 +810,10 @@ public class Player : SimulatedObject {
 
         string[] subStrings = remainder.Split(' ');
         remainder = concatenateSplitString(1, subStrings, " ");
-        Debug.Log(remainder);
+        //Debug.Log(remainder);
         Sim_Variable newInt = new Sim_Variable(subStrings[0], "int", "0");
         performIntOperations(newInt, remainder);
-        Debug.Log(newInt.ToString());
+        //Debug.Log(newInt.ToString());
 
         createInt(newInt.name, newInt.value);
 
@@ -841,6 +921,224 @@ public class Player : SimulatedObject {
 
 
 
+    bool SimulatedIntComparison(string val1, string comparisonOperator, string val2)
+    {
+        int int1, int2;
+
+        Sim_Variable var1 = FindSimVariable(val1, sim.variables);
+        if (var1 != null)
+        {
+            if (!int.TryParse(var1.value, out int1))
+            {
+                //should not be possible
+            }
+        }
+        else
+        {
+            if (int.TryParse(val1, out int1))
+            {
+
+            }
+            else
+            {
+                //break error
+            }
+        }
+
+        Sim_Variable var2 = FindSimVariable(val2, sim.variables);
+        if (var2 != null)
+        {
+            if (!int.TryParse(var2.value, out int2))
+            {
+                //should not be possible
+            }
+
+        }
+        else
+        {
+            if (int.TryParse(val2, out int2))
+            {
+
+            }
+            else
+            {
+                //break error
+            }
+        }
+
+        if (comparisonOperator == "==")
+        {
+            if (int1 == int2)
+                return true;
+        }
+        else if (comparisonOperator == "<")
+        {
+            if (int1 < int2)
+                return true;
+        }
+        else if (comparisonOperator == ">")
+        {
+            if (int1 > int2)
+                return true;
+        }
+        else if (comparisonOperator == "<=" || comparisonOperator == "=<")
+        {
+            if (int1 <= int2)
+                return true;
+        }
+        else if (comparisonOperator == ">=" || comparisonOperator == "=>")
+        {
+            if (int1 >= int2)
+                return true;
+        }
+        else
+        {
+            Debug.Log("Errrror");
+        }
+
+        return false;
+    }
+
+
+    bool SimulatedBoolComparison(string val1, string comparisonOperator, string val2)
+    {
+
+        Sim_Variable var1 = FindSimVariable(val1, sim.variables);
+        if (var1 != null)
+        {
+            val1 = var1.value;
+        }
+        else
+        {
+            if (val1 != "true" || val1 != "false")
+            {
+                //break error
+            }
+        }
+
+        Sim_Variable var2 = FindSimVariable(val2, sim.variables);
+        if (var2 != null)
+        {
+            val2 = var2.value;
+        }
+        else
+        {
+            if (val2 != "true" || val2 != "false")
+            {
+                //break error
+            }
+        }
+
+        if (comparisonOperator == "==")
+        {
+            if (val1 == val2)
+                return true;
+        }
+        else
+        {
+            Debug.Log("Errrror");
+        }
+
+        return false;
+    }
+
+
+
+
+
+    bool SimulatedCharComparison(string val1, string comparisonOperator, string val2)
+    {
+
+        Sim_Variable var1 = FindSimVariable(val1, sim.variables);
+        if (var1 != null)
+        {
+            val1 = var1.value;
+        }
+        else
+        {
+            //if the char is contained by ' '
+                //remove them
+                //check length
+            //else
+                //break error
+
+            if (val1.Length != 1)
+            {
+                //break error
+            }
+        }
+
+        Sim_Variable var2 = FindSimVariable(val2, sim.variables);
+        if (var2 != null)
+        {
+            val2 = var2.value;
+        }
+        else
+        {
+            if (val2 != "true" || val2 != "false")
+            {
+                //break error
+            }
+        }
+
+        if (comparisonOperator == "==")
+        {
+            if (val1 == val2)
+                return true;
+        }
+        else
+        {
+            Debug.Log("Errrror");
+        }
+
+        return false;
+    }
+
+
+    bool SimulatedStringComparison(string val1, string comparisonOperator, string val2)
+    {
+
+        Sim_Variable var1 = FindSimVariable(val1, sim.variables);
+        if (var1 != null)
+        {
+            val1 = var1.value;
+        }
+        else
+        {
+            //if the string is contained by " "
+            //remove them
+            //else
+            //break error
+
+        }
+
+        Sim_Variable var2 = FindSimVariable(val2, sim.variables);
+        if (var2 != null)
+        {
+            val2 = var2.value;
+        }
+        else
+        {
+            if (val2 != "true" || val2 != "false")
+            {
+                //break error
+            }
+        }
+
+        if (comparisonOperator == "==")
+        {
+            if (val1 == val2)
+                return true;
+        }
+        else
+        {
+            Debug.Log("Errrror");
+        }
+
+        return false;
+    }
+
+
 
 
 
@@ -855,3 +1153,8 @@ public class Player : SimulatedObject {
         return this.outputString;
     }
 }
+
+
+
+
+
