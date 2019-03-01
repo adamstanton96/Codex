@@ -290,11 +290,11 @@ public class Player : SimulatedObject {
                     }
                     else if (firstItem == "char")
                     {
-                        //createChar();
+                        createChar(remainder);
                     }
                     else if (firstItem == "string")
                     {
-                        //createString();
+                        createString(remainder);
                     }
                     else
                     {
@@ -324,14 +324,8 @@ public class Player : SimulatedObject {
                         }
                         else if (firstItem == "if")
                         {
-                            //Break down the contents of the brackets.
-                            //Concatenate all code within the braces, store as string.
-                            //Loop the coroutine run and yield based on values deciphered.
-
-                            //for(int i = 0; i <= 5; i++)
 
                             Debug.Log("Entered sim if");
-
 
                             string codeBlock = "";
                             int codeBlockEnd;
@@ -364,14 +358,13 @@ public class Player : SimulatedObject {
                                 }
                                 else
                                 {
-                                    //break error
+                                    SimPrintError("SYNTAX ERROR: Unrecognised variable type for variable \"" + initial.name + "\"");
                                 }
                             }
                             else
                             {
                                 //determine is int, or other stuff
                             }
-
 
                             subStrings = CodeLines[x + 1].Split(' ', '\n');
                             firstItem = subStrings[0];
@@ -392,7 +385,6 @@ public class Player : SimulatedObject {
                                         break;
                                     }
                                 }
-
 
                                 if(closedBraces)
                                 {
@@ -429,8 +421,7 @@ public class Player : SimulatedObject {
                         }
                         else
                         {
-                            Debug.Log("Error");
-                            yield break;
+                            SimPrintError("SYNTAX ERROR: Could not recognise symbol \"" + firstItem + "\"");
                         }
                     }
                 }
@@ -568,6 +559,22 @@ public class Player : SimulatedObject {
         }
         return returnString;
     }
+
+
+
+
+
+
+
+
+
+
+
+    /////////////////////////////
+    /////////////////////////////
+    // Sim Variable Operations //
+    /////////////////////////////
+    /////////////////////////////
 
     string performIntOperations(Sim_Variable var, string remainder)
     {
@@ -805,6 +812,15 @@ public class Player : SimulatedObject {
     }
 
 
+
+
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    // Sim Variable Creation Functions //
+    /////////////////////////////////////
+    /////////////////////////////////////
+
     string createInt(string remainder)
     {
 
@@ -823,20 +839,60 @@ public class Player : SimulatedObject {
     string createBool(string remainder)
     {
         string[] subStrings = remainder.Split(' ', ';');
-        remainder = concatenateSplitString(1, subStrings, " ");
         Debug.Log(subStrings[2]);
         createBool(subStrings[0], subStrings[2]);
-
         return "";
     }
 
     string createString(string remainder)
     {
+        string[] subStrings = remainder.Split(' ', ';');
+        Debug.Log(subStrings[2]);
+
+        string name = subStrings[0];
+        string value = subStrings[2];
+        int length = value.Length;
+
+        if (value[0] == '\"' && value[length-1] == '\"')
+        {
+            Debug.Log("Before" + value);
+            value.Trim('"');
+            Debug.Log("After" + value);
+            createString(name, value.ToString());
+        }
+        else
+        {
+            //error
+        }
+
         return "";
     }
 
     string createChar(string remainder)
     {
+        string[] subStrings = remainder.Split(' ', ';');
+        //remainder = concatenateSplitString(1, subStrings, " ");
+        Debug.Log(subStrings[2]);
+
+        string name = subStrings[0];
+        string value = subStrings[2];
+
+        if (value.Length == 3)
+        {
+            if (value[0] == '\'' && value[2] == '\'')
+            {
+                createChar(name, value[1].ToString());
+            }
+            else
+            {
+                //error
+            }
+        }
+        else
+        {
+            //error
+        }
+
         return "";
     }
 
@@ -871,15 +927,8 @@ public class Player : SimulatedObject {
 
     string createString(string name, string value)
     {
-        //if (value == "true" || value == "false")
-        //{
-        //    Sim_Variable newBool = new Sim_Variable(name, "bool", value);
-        //    simVariables.Add(newBool);
-        //}
-        //else
-        //{
-        //    Debug.Log("Value is not an boolean.");
-        //}
+        Sim_Variable newString = new Sim_Variable(name, "string", value);
+        simVariables.Add(newString);
         return "";
     }
 
@@ -896,30 +945,16 @@ public class Player : SimulatedObject {
         }
         return "";
     }
-
-    bool isInt(Sim_Variable var)
-    {
-        return var.type == "int";
-    }
-
-    bool isBool(Sim_Variable var)
-    {
-        return var.type == "bool";
-    }
-
-    bool isChar(Sim_Variable var)
-    {
-        return var.type == "char";
-    }
-
-    bool isString(Sim_Variable var)
-    {
-        return var.type == "string";
-    }
+    
 
 
 
 
+    //////////////////////////////
+    //////////////////////////////
+    // Sim Variable Comparisons //
+    //////////////////////////////
+    //////////////////////////////
 
     bool SimulatedIntComparison(string val1, string comparisonOperator, string val2)
     {
@@ -1000,6 +1035,7 @@ public class Player : SimulatedObject {
     }
 
 
+
     bool SimulatedBoolComparison(string val1, string comparisonOperator, string val2)
     {
 
@@ -1041,8 +1077,6 @@ public class Player : SimulatedObject {
 
         return false;
     }
-
-
 
 
 
@@ -1095,6 +1129,7 @@ public class Player : SimulatedObject {
     }
 
 
+
     bool SimulatedStringComparison(string val1, string comparisonOperator, string val2)
     {
 
@@ -1142,6 +1177,11 @@ public class Player : SimulatedObject {
 
 
 
+    ////////////////////
+    ////////////////////
+    // Misc Functions //
+    ////////////////////
+    ////////////////////
 
     public string GetPassword()
     {
@@ -1152,6 +1192,37 @@ public class Player : SimulatedObject {
     {
         return this.outputString;
     }
+
+    bool isInt(Sim_Variable var)
+    {
+        return var.type == "int";
+    }
+
+    bool isBool(Sim_Variable var)
+    {
+        return var.type == "bool";
+    }
+
+    bool isChar(Sim_Variable var)
+    {
+        return var.type == "char";
+    }
+
+    bool isString(Sim_Variable var)
+    {
+        return var.type == "string";
+    }
+
+
+
+    void SimPrintError(string error)
+    {
+        this.outputString = this.outputString + error + '\n';
+        StopAllCoroutines();
+    }
+
+
+
 }
 
 
