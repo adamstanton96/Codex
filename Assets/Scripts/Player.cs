@@ -25,17 +25,9 @@ public class Player : SimulatedObject {
     public int stage = 0;
     public int collectiblesHeld = 0;
 
-    //string defaultOutputString = "Code Output:\n";
-    //string outputString = "Code Output:\n";
-
     string defaultOutputString = "";
     string outputString = "";
     string password = "";
-
-    //string testString = "MoveNorth();\nMoveEast();\nMoveSouth();\nMoveEast();";
-    //public string testString = "Player.health = 5;";
-    //string testString = "int var4 = var1 + var2 + var3;\nint var5 = var4 + 10;\nMoveNorth();";
-    string testString;
 
     List<Sim_Function> simFunctions = new List<Sim_Function>();
     List<Sim_Variable> simVariables = new List<Sim_Variable>();
@@ -88,8 +80,7 @@ public class Player : SimulatedObject {
     public void Run()
     {
         PartialReset();
-        testString = inputField.text.ToString();
-        StartCoroutine(RunCode(sim, testString));
+        StartCoroutine(RunCode(sim, inputField.text.ToString()));
     }
 
     public void FullReset()
@@ -125,7 +116,11 @@ public class Player : SimulatedObject {
 
 
 
-
+    //////////////////////////////////////
+    //////////////////////////////////////
+    // Real Functions for Sim Functions //
+    //////////////////////////////////////
+    //////////////////////////////////////
 
     string MoveNorth(string arg)
     {
@@ -155,8 +150,6 @@ public class Player : SimulatedObject {
         return "null";
     }
 
-
-
     string NextStage(string arg)
     { 
         stage++;
@@ -167,48 +160,13 @@ public class Player : SimulatedObject {
 
 
 
-    public override string ToString()
-    {
-        string returnStr = "Functions:\n";
-        for (int i = 0; i < simFunctions.Count; i++)
-        {
-            returnStr += simFunctions[i].ToString();
-        }
-
-        returnStr += "\n\nVariables:\n";
-        for (int i = 0; i < simVariables.Count; i++)
-        {
-            returnStr += simVariables[i].ToString();
-        }
-        return returnStr;
-    }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ////////////////////////////
+    ////////////////////////////
+    // Code Running Coroutine //
+    ////////////////////////////
+    ////////////////////////////
 
     public IEnumerator RunCode(Sim_GameObject sim, string codeString)
     {
@@ -401,6 +359,7 @@ public class Player : SimulatedObject {
                                     }
 
                                     x = codeBlockEnd;
+
                                 }
                                 else
                                 {
@@ -440,7 +399,96 @@ public class Player : SimulatedObject {
 
 
 
+    IEnumerator runSimIf(string remainder, string[] CodeLines, int x)
+    {
+        Debug.Log("Entered sim if");
 
+        string codeBlock = "";
+        int codeBlockEnd;
+
+        string[] subStrings = remainder.Split(' ', '(', ')');
+
+        string firstItem = subStrings[0];
+
+        bool conditionMet = false;
+
+        Sim_Variable initial = FindSimVariable(firstItem, sim.variables);
+        if (initial != null)
+        {
+            if (initial.type == "int")
+            {
+                Debug.Log("Entered sim if 2");
+                conditionMet = SimulatedIntComparison(firstItem, subStrings[1], subStrings[2]);
+            }
+            else if (initial.type == "bool")
+            {
+                conditionMet = SimulatedBoolComparison(firstItem, subStrings[1], subStrings[2]);
+            }
+            else if (initial.type == "char")
+            {
+                conditionMet = SimulatedCharComparison(firstItem, subStrings[1], subStrings[2]);
+            }
+            else if (initial.type == "string")
+            {
+                conditionMet = SimulatedStringComparison(firstItem, subStrings[1], subStrings[2]);
+            }
+            else
+            {
+                SimPrintError("SYNTAX ERROR: Unrecognised variable type for variable \"" + initial.name + "\"");
+            }
+        }
+        else
+        {
+            //determine is int, or other stuff
+        }
+
+        subStrings = CodeLines[x + 1].Split(' ', '\n');
+        firstItem = subStrings[0];
+        if (firstItem == "{")
+        {
+            bool closedBraces = false;
+            int startIndex = x + 1;
+            int endIndex = x + 1;
+            for (int i = startIndex; i < CodeLines.Length; i++)
+            {
+                endIndex = i;
+                subStrings = CodeLines[i].Split(' ', '\n');
+                firstItem = subStrings[0];
+                if (firstItem == "}")
+                {
+                    Debug.Log(conditionMet);
+                    closedBraces = true;
+                    break;
+                }
+            }
+
+            if (closedBraces)
+            {
+                codeBlockEnd = endIndex;
+                for (int i = startIndex; i < endIndex; i++)
+                {
+                    codeBlock += CodeLines[i] + '\n';
+                }
+
+                if (conditionMet)
+                {
+                    StartCoroutine(RunCode(sim, codeBlock));
+                    yield return new WaitUntil(() => runComplete == true);
+                }
+
+                x = codeBlockEnd;
+            }
+            else
+            {
+                //break error
+            }
+
+        }
+        else
+        {
+            //break error
+        }
+    }
 
 
 
@@ -1213,15 +1261,27 @@ public class Player : SimulatedObject {
         return var.type == "string";
     }
 
-
-
-    void SimPrintError(string error)
+    public void SimPrintError(string error)
     {
         this.outputString = this.outputString + error + '\n';
         StopAllCoroutines();
     }
 
+    public override string ToString()
+    {
+        string returnStr = "Functions:\n";
+        for (int i = 0; i < simFunctions.Count; i++)
+        {
+            returnStr += simFunctions[i].ToString();
+        }
 
+        returnStr += "\n\nVariables:\n";
+        for (int i = 0; i < simVariables.Count; i++)
+        {
+            returnStr += simVariables[i].ToString();
+        }
+        return returnStr;
+    }
 
 }
 
