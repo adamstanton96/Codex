@@ -8,6 +8,8 @@ TagManager:
   - Stage2Spawn
   - Stage3Spawn
   - Stage4Spawn
+  - StageCompletePopup
+  - LevelCompletePopup
   layers:
   - Default
   - TransparentFX

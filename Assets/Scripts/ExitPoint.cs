@@ -5,6 +5,7 @@ using UnityEngine;
 public class ExitPoint : MonoBehaviour
 {
     public Player player;
+    public GameObject popup;
 
     // Use this for initialization
     void Start()
@@ -40,7 +41,7 @@ public class ExitPoint : MonoBehaviour
     //    }
     //}
 
-    void OnTriggerStay(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         //Debug.Log("inside");
         if (other.tag == "Player")
@@ -53,10 +54,20 @@ public class ExitPoint : MonoBehaviour
 
     void NextStage()
     {
+        Debug.Log(player.stage);
         if (player.stage < player.stages.Count - 1)
         {
             player.stage++;
-            player.SetupStage();
+            //player.SetupStage();
+            if (popup != null)
+            {
+                Debug.Log("Making Popup Active");
+                popup.SetActive(true);
+            }
+            else
+            {
+                Debug.Log("No Popup Found.");
+            }
         }
         else
         {

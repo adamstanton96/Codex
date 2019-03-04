@@ -5,6 +5,7 @@ using UnityEngine;
 public class ListeningDevice : MonoBehaviour {
 
     public Player player;
+    public GameObject popup;
     string listenString = "Hello World";
 
     // Use this for initialization
@@ -18,7 +19,7 @@ public class ListeningDevice : MonoBehaviour {
     {
         if(player.GetPassword() == listenString)
         {
-            Debug.Log("done");
+            //Debug.Log("done");
             NextStage();
             this.gameObject.SetActive(false);
         }
@@ -30,11 +31,18 @@ public class ListeningDevice : MonoBehaviour {
         if (player.stage < player.stages.Count - 1)
         {
             player.stage++;
-            player.SetupStage();
+            if (popup != null)
+            {
+                popup.SetActive(true);
+            }
+            else
+            {
+                Debug.Log("No Popup Found.");
+            }
         }
         else
         {
-            player.gameObject.SetActive(false);
+            player.s.LoadScene("MainMenu");
         }
     }
 }

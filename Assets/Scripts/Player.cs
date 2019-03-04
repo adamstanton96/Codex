@@ -62,10 +62,10 @@ public class Player : SimulatedObject {
 
         Sim_Function _MoveWest = new Sim_Function("MoveWest", "", "void", "//Moves the player west one space.", MoveWest);
         simFunctions.Add(_MoveWest);
-
+        /*
         Sim_Function _NextStage = new Sim_Function("NextStage", "", "void", "//For Debug.", NextStage);
         simFunctions.Add(_NextStage);
-
+        */
         sim = new Sim_GameObject("Player", simFunctions, simVariables);
     }
 
@@ -160,7 +160,7 @@ public class Player : SimulatedObject {
 
 
 
-
+    
 
     ////////////////////////////
     ////////////////////////////
@@ -172,34 +172,30 @@ public class Player : SimulatedObject {
     {
         string[] CodeLines = null;
         CodeLines = codeString.Split('\n');
-        //Debug.Log(CodeLines.Length);
+        
+        if(CodeLines.Length == 0)
+        {
+            SimPrintError("SYNTAX ERROR: No code provided to run. Please input code to the code window.");
+        }
 
         for (int x = 0; x < CodeLines.Length; x++)
         {
+            //Inform the player that a line of code is being currently run...
             runComplete = false;
 
-            //Debug.Log(CodeLines[x]);
+            //Split the line of code and determine the first item and remainder of the line...
             string firstItem = "", remainder = "";
             string[] subStrings = CodeLines[x].Split('(', ' ');
-
-            if (subStrings.Length == 0)
-            {
-                Debug.Log("Error no arguments found.");
-            }
-            else if (subStrings.Length == 1)
+            if (subStrings.Length >= 1)
             {
                 firstItem = subStrings[0];
-                //Debug.Log(firstItem);
             }
-            else
+            if (subStrings.Length > 1)
             {
-                firstItem = subStrings[0];
                 remainder = concatenateSplitString(1, subStrings, " ");
-                //Debug.Log(firstItem);
-                //Debug.Log(remainder);
             }
 
-            //Check if the first item references a call to an existing function or method.
+            //Check if the first item references a call to an existing function or method...
             Sim_Function function = FindSimFunction(firstItem, sim.functions);
             if (function != null)
             {
@@ -207,7 +203,7 @@ public class Player : SimulatedObject {
             }
             else
             {
-                //Check if the first item references an existing variable.
+                //Check if the first item references an existing variable...
                 Sim_Variable variable = FindSimVariable(firstItem, sim.variables);
                 if (variable != null)
                 {
@@ -229,17 +225,14 @@ public class Player : SimulatedObject {
                     }
                     else
                     {
-                        //Debug.Log("Not A Variable");
+                        SimPrintError("SYNTAX ERROR: Unrecognised variable type for variable \"" + variable.name + "\"");
                     }
                 }
                 else
                 {
-                    //Check if first item is attempting to create a new variable.
+                    //Check if the first item references an attempt to create a new primitive variable...
                     if (firstItem == "int")
                     {
-                        //split name and value
-
-                        //create int with name and value
                         createInt(remainder);
                     }
                     else if (firstItem == "bool")
@@ -256,7 +249,7 @@ public class Player : SimulatedObject {
                     }
                     else
                     {
-                        //Debug.Log("Not A Variable");
+                        //Check if the first item refers to a system function or structure (printf, for, do, while, if, etc.)...
                         if(firstItem == "printf")
                         {
                             SimPrintf(remainder);
@@ -279,6 +272,89 @@ public class Player : SimulatedObject {
                             //Concatenate all code within the braces, store as string.
                             //Loop the coroutine run and yield based on values deciphered.
 
+                            Debug.Log("Entered sim while");
+
+                            string codeBlock = "";
+                            int codeBlockEnd;
+
+                            subStrings = remainder.Split(' ', '(', ')');
+
+                            firstItem = subStrings[0];
+
+                            bool conditionMet = RunSimComparisons(subStrings);
+
+                            subStrings = CodeLines[x + 1].Split(' ', '\n');
+                            firstItem = subStrings[0];
+                            Debug.Log(firstItem);
+                            if (firstItem == "{")
+                            {
+                                //Debug.Log("{");
+                                bool closedBraces = false;
+                                int intialLineIndex = x;
+                                int startIndex = x + 1;
+                                int endIndex = x + 1;
+                                int nestedLevel = 0;
+                                for (int i = startIndex; i < CodeLines.Length; i++)
+                                {
+                                    //Debug.Log(CodeLines[i]);
+                                    endIndex = i;
+                                    subStrings = CodeLines[i].Split(' ', '\n');
+                                    firstItem = subStrings[0];
+                                    if (firstItem == "{")
+                                    {
+                                        nestedLevel++;
+                                    }
+
+                                    if (firstItem == "}")
+                                    {
+                                        if (nestedLevel == 1)
+                                        {
+                                            //Debug.Log("}");
+                                            closedBraces = true;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            nestedLevel--;
+                                        }
+                                    }
+                                }
+
+                                if (closedBraces)
+                                {
+                                    codeBlockEnd = endIndex;
+                                    for (int i = startIndex; i < endIndex; i++)
+                                    {
+                                        codeBlock += CodeLines[i] + '\n';
+                                    }
+                                    Debug.Log(conditionMet);
+                                    if (conditionMet)
+                                    {
+                                        StartCoroutine(RunCode(sim, codeBlock));
+                                        yield return new WaitUntil(() => runComplete == true);
+                                        x = intialLineIndex;
+                                        string loopBlock = CodeLines[x] + '\n' + codeBlock + "}";
+                                        Debug.Log(loopBlock);
+                                        StartCoroutine(RunCode(sim, codeBlock));
+                                        yield return new WaitUntil(() => runComplete == true);
+                                    }
+
+                                    x = codeBlockEnd;
+
+                                }
+                                else
+                                {
+                                    SimPrintError("SYNTAX ERROR: 1");
+                                }
+
+                            }
+                            else
+                            {
+                                SimPrintError("SYNTAX ERROR: 2");
+                            }
+
+
+
                         }
                         else if (firstItem == "if")
                         {
@@ -292,55 +368,41 @@ public class Player : SimulatedObject {
 
                             firstItem = subStrings[0];
 
-                            bool conditionMet = false;
-
-                            Sim_Variable initial = FindSimVariable(firstItem, sim.variables);
-                            if(initial != null)
-                            {
-                                if(initial.type == "int")
-                                {
-                                    Debug.Log("Entered sim if 2");
-                                    conditionMet = SimulatedIntComparison(firstItem, subStrings[1], subStrings[2]);
-                                }
-                                else if (initial.type == "bool")
-                                {
-                                    conditionMet = SimulatedBoolComparison(firstItem, subStrings[1], subStrings[2]);
-                                }
-                                else if (initial.type == "char")
-                                {
-                                    conditionMet = SimulatedCharComparison(firstItem, subStrings[1], subStrings[2]);
-                                }
-                                else if (initial.type == "string")
-                                {
-                                    conditionMet = SimulatedStringComparison(firstItem, subStrings[1], subStrings[2]);
-                                }
-                                else
-                                {
-                                    SimPrintError("SYNTAX ERROR: Unrecognised variable type for variable \"" + initial.name + "\"");
-                                }
-                            }
-                            else
-                            {
-                                //determine is int, or other stuff
-                            }
-
+                            bool conditionMet = RunSimComparisons(subStrings);
+   
                             subStrings = CodeLines[x + 1].Split(' ', '\n');
                             firstItem = subStrings[0];
+                            Debug.Log(firstItem);
                             if(firstItem == "{")
                             {
+                                Debug.Log("{");
                                 bool closedBraces = false;
                                 int startIndex = x + 1;
                                 int endIndex = x + 1;
+                                int nestedLevel = 0;
                                 for (int i = startIndex; i < CodeLines.Length; i++)
                                 {
+                                    Debug.Log(CodeLines[i]);
                                     endIndex = i;
                                     subStrings = CodeLines[i].Split(' ', '\n');
                                     firstItem = subStrings[0];
+                                    if(firstItem == "{")
+                                    {
+                                        nestedLevel++;
+                                    }
+
                                     if (firstItem == "}")
                                     {
-                                        Debug.Log(conditionMet);
-                                        closedBraces = true;
-                                        break;
+                                        if (nestedLevel == 1)
+                                        {
+                                            Debug.Log("}");
+                                            closedBraces = true;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            nestedLevel--;
+                                        }
                                     }
                                 }
 
@@ -351,7 +413,7 @@ public class Player : SimulatedObject {
                                     {
                                         codeBlock += CodeLines[i] + '\n';
                                     }
-
+                                    Debug.Log(conditionMet);
                                     if (conditionMet)
                                     {
                                         StartCoroutine(RunCode(sim, codeBlock));
@@ -363,21 +425,23 @@ public class Player : SimulatedObject {
                                 }
                                 else
                                 {
-                                    //break error
+                                    SimPrintError("SYNTAX ERROR: 1");
                                 }
 
                             }
                             else
                             {
-                                //break error
+                                SimPrintError("SYNTAX ERROR: 2");
                             }
  
 
                         }
-                        else if (firstItem == "" || firstItem == "{" || firstItem == "}")
+                        //Check if the first item is whitespace or an unused character...
+                        else if (firstItem == "" || firstItem == "{" || firstItem == "}" || firstItem == "//")
                         {
                             Debug.Log("Not an error, just some whitespace.");
                         }
+                        //If first item is none of these, it is invalid and an error is thrown...
                         else
                         {
                             SimPrintError("SYNTAX ERROR: Could not recognise symbol \"" + firstItem + "\"");
@@ -386,10 +450,12 @@ public class Player : SimulatedObject {
                 }
             }
 
+            //If a code line is running, suspend running the next line for effect...
             if(runComplete == false)
                 yield return new WaitForSeconds(1.0f);
         }
 
+        //Inform the player that the run is complete then break from the coroutine...
         runComplete = true;
         yield break;
     }
@@ -398,39 +464,30 @@ public class Player : SimulatedObject {
 
 
 
-
-    IEnumerator runSimIf(string remainder, string[] CodeLines, int x)
+    bool RunSimComparisons(string [] subStrings)
     {
-        Debug.Log("Entered sim if");
+        bool returnVal = false;
 
-        string codeBlock = "";
-        int codeBlockEnd;
-
-        string[] subStrings = remainder.Split(' ', '(', ')');
-
-        string firstItem = subStrings[0];
-
-        bool conditionMet = false;
-
-        Sim_Variable initial = FindSimVariable(firstItem, sim.variables);
+        Sim_Variable initial = FindSimVariable(subStrings[0], sim.variables);
         if (initial != null)
         {
             if (initial.type == "int")
             {
-                Debug.Log("Entered sim if 2");
-                conditionMet = SimulatedIntComparison(firstItem, subStrings[1], subStrings[2]);
+                //Debug.Log("Entered sim if 2");
+                returnVal = SimulatedIntComparison(subStrings[0], subStrings[1], subStrings[2]);
+                //Debug.Log(returnVal);
             }
             else if (initial.type == "bool")
             {
-                conditionMet = SimulatedBoolComparison(firstItem, subStrings[1], subStrings[2]);
+                returnVal = SimulatedBoolComparison(subStrings[0], subStrings[1], subStrings[2]);
             }
             else if (initial.type == "char")
             {
-                conditionMet = SimulatedCharComparison(firstItem, subStrings[1], subStrings[2]);
+                returnVal = SimulatedCharComparison(subStrings[0], subStrings[1], subStrings[2]);
             }
             else if (initial.type == "string")
             {
-                conditionMet = SimulatedStringComparison(firstItem, subStrings[1], subStrings[2]);
+                returnVal = SimulatedStringComparison(subStrings[0], subStrings[1], subStrings[2]);
             }
             else
             {
@@ -441,53 +498,7 @@ public class Player : SimulatedObject {
         {
             //determine is int, or other stuff
         }
-
-        subStrings = CodeLines[x + 1].Split(' ', '\n');
-        firstItem = subStrings[0];
-        if (firstItem == "{")
-        {
-            bool closedBraces = false;
-            int startIndex = x + 1;
-            int endIndex = x + 1;
-            for (int i = startIndex; i < CodeLines.Length; i++)
-            {
-                endIndex = i;
-                subStrings = CodeLines[i].Split(' ', '\n');
-                firstItem = subStrings[0];
-                if (firstItem == "}")
-                {
-                    Debug.Log(conditionMet);
-                    closedBraces = true;
-                    break;
-                }
-            }
-
-            if (closedBraces)
-            {
-                codeBlockEnd = endIndex;
-                for (int i = startIndex; i < endIndex; i++)
-                {
-                    codeBlock += CodeLines[i] + '\n';
-                }
-
-                if (conditionMet)
-                {
-                    StartCoroutine(RunCode(sim, codeBlock));
-                    yield return new WaitUntil(() => runComplete == true);
-                }
-
-                x = codeBlockEnd;
-            }
-            else
-            {
-                //break error
-            }
-
-        }
-        else
-        {
-            //break error
-        }
+        return returnVal;
     }
 
 
@@ -495,18 +506,16 @@ public class Player : SimulatedObject {
 
     void SimPrintf(string remainder)
     {
-        //Debug.Log("PRINTF");
         string stringToPrint = GetSimPrintString(remainder);
-        //Debug.Log(stringToPrint);
         this.outputString = this.outputString + stringToPrint + '\n';
-        //Debug.Log(outputString);
+
         password = stringToPrint;
     }
 
     string GetSimPrintString(string remainder)
     {
         string returnString = "";
-        string[] subStrings = remainder.Split('+', ')');
+        string[] subStrings = remainder.Split('+', ')', ';');
 
         for (int i = 0; i < subStrings.Length; i++)
         {
@@ -522,7 +531,7 @@ public class Player : SimulatedObject {
                 string[] subSubStrings = subStrings[i].Split('\"');
                 if(subSubStrings.Length != 3)
                 {
-                    //Debug.Log("Error in printf, string count " + subSubStrings.Length);
+                    //SimPrintError("SYNTAX ERROR: Invalid parameters for printf.");
                 }
                 else
                 {
@@ -673,7 +682,7 @@ public class Player : SimulatedObject {
             if (temp2 != 0)
                 var.value = (temp / temp2).ToString();
             else
-                Debug.Log("Cannot divide by zero!!!");
+                SimPrintError("LOGIC ERROR: Cannot divide by zero.");
         }
         else if (subStrings[0] == "++")
         {
@@ -710,44 +719,7 @@ public class Player : SimulatedObject {
             int.TryParse(var.value, out temp);
             var.value = (temp + recursiveIntOperations(remainder)).ToString();
         }
-        else if (subStrings[0] == "-=")
-        {
-            int temp;
-            int.TryParse(var.value, out temp);
-            var.value = (temp - recursiveIntOperations(remainder)).ToString();
-        }
-        else if (subStrings[0] == "*=")
-        {
-            int temp;
-            int.TryParse(var.value, out temp);
-            var.value = (temp * recursiveIntOperations(remainder)).ToString();
-        }
-        else if (subStrings[0] == "/=")
-        {
-            int temp, temp2;
-            int.TryParse(var.value, out temp);
-            temp2 = recursiveIntOperations(remainder);
-            if (temp2 != 0)
-                var.value = (temp / temp2).ToString();
-            else
-                Debug.Log("Cannot divide by zero!!!");
-        }
-        else if (subStrings[0] == "++")
-        {
-            int temp;
-            int.TryParse(var.value, out temp);
-            temp++;
-            Debug.Log(temp);
-            var.value = (temp).ToString();
-        }
-        else if (subStrings[0] == "--")
-        {
-            int temp;
-            int.TryParse(var.value, out temp);
-            temp--;
-            Debug.Log(temp);
-            var.value = (temp--).ToString();
-        }
+        
 
         return "";
     }
