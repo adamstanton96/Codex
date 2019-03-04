@@ -28,7 +28,7 @@ public class ListeningDevice : MonoBehaviour {
 
     void NextStage()
     {
-        if (player.stage < player.stages.Count - 1)
+        if (player.stage < player.stages.Count)
         {
             player.stage++;
             if (popup != null)

@@ -109,7 +109,10 @@ public class Player : SimulatedObject {
 
     public void SetupStage()
     {
-        FullReset();
+        if(stage < stages.Count)
+            FullReset();
+        else
+            s.LoadScene("MainMenu");
     }
 
 
@@ -335,7 +338,7 @@ public class Player : SimulatedObject {
                                         x = intialLineIndex;
                                         string loopBlock = CodeLines[x] + '\n' + codeBlock + "}";
                                         Debug.Log(loopBlock);
-                                        StartCoroutine(RunCode(sim, codeBlock));
+                                        StartCoroutine(RunCode(sim, loopBlock));
                                         yield return new WaitUntil(() => runComplete == true);
                                     }
 

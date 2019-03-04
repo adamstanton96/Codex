@@ -9,6 +9,7 @@ public class Stage : MonoBehaviour {
     public List<Collectible> collectibles;
     public ExitPoint exitPoint;
     public ListeningDevice listDev;
+    public VariableTracker varTrack;
 
     // Use this for initialization
     void Start ()
@@ -29,6 +30,8 @@ public class Stage : MonoBehaviour {
         ResetCollectibles();
         if(listDev != null)
             listDev.gameObject.SetActive(true);
+        if (varTrack != null)
+            varTrack.gameObject.SetActive(true);
     }
 
     public void ResetCollectibles()

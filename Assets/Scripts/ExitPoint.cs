@@ -15,32 +15,6 @@ public class ExitPoint : MonoBehaviour
         boxCollider.isTrigger = true;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    //void OnTriggerEnter(Collider other)
-    //{
-    //    Debug.Log("entered");
-    //    if (other.tag == "Player")
-    //    {
-    //        if (player.collectiblesHeld >= player.stages[player.stage].collectibles.Count)
-    //        {
-    //            if (player.stage < player.stages.Count - 1)
-    //            {
-    //                player.stage++;
-    //                player.SetupStage();
-    //            }
-    //            else
-    //            {
-    //                player.gameObject.SetActive(false);
-    //            }
-    //        }
-    //    }
-    //}
-
     void OnTriggerEnter(Collider other)
     {
         //Debug.Log("inside");
@@ -55,7 +29,7 @@ public class ExitPoint : MonoBehaviour
     void NextStage()
     {
         Debug.Log(player.stage);
-        if (player.stage < player.stages.Count - 1)
+        if (player.stage < player.stages.Count)
         {
             player.stage++;
             //player.SetupStage();

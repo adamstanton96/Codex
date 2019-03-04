@@ -7,20 +7,6 @@ public class Collectible : MonoBehaviour
 
     public Player player;
 
-	// Use this for initialization
-	void Start ()
-    {
-        // add isTrigger
-        //var boxCollider = gameObject.AddComponent<BoxCollider>();
-        //boxCollider.isTrigger = true;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-		
-	}
-
     void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
