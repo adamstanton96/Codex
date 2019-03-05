@@ -6,7 +6,7 @@ public class ListeningDevice : MonoBehaviour {
 
     public Player player;
     public GameObject popup;
-    string listenString = "Hello World";
+    public string listenString = "Hello World";
 
     // Use this for initialization
     void Start()

@@ -444,6 +444,7 @@ public class Player : SimulatedObject {
                             Debug.Log("Entered sim if");
 
                             string codeBlock = "";
+                            string elseBlock = "";
                             int codeBlockEnd;
 
                             subStrings = remainder.Split(' ', '(' , ')');
@@ -455,7 +456,7 @@ public class Player : SimulatedObject {
                             subStrings = CodeLines[x + 1].Split(' ', '\n');
                             firstItem = subStrings[0];
                             Debug.Log(firstItem);
-                            if(firstItem == "{")
+                            if (firstItem == "{")
                             {
                                 Debug.Log("{");
                                 bool closedBraces = false;
@@ -468,7 +469,7 @@ public class Player : SimulatedObject {
                                     endIndex = i;
                                     subStrings = CodeLines[i].Split(' ', '\n');
                                     firstItem = subStrings[0];
-                                    if(firstItem == "{")
+                                    if (firstItem == "{")
                                     {
                                         nestedLevel++;
                                     }
@@ -488,40 +489,104 @@ public class Player : SimulatedObject {
                                     }
                                 }
 
-                                if(closedBraces)
+                                if (closedBraces)
                                 {
                                     codeBlockEnd = endIndex;
-                                    for(int i = startIndex; i < endIndex; i++)
+                                    for (int i = startIndex; i < endIndex; i++)
                                     {
                                         codeBlock += CodeLines[i] + '\n';
                                     }
-                                    Debug.Log(conditionMet);
-                                    if (conditionMet)
+
+                                    Debug.Log(codeBlock);
+
+                                    if (CodeLines[codeBlockEnd + 1] == "else")
                                     {
-                                        StartCoroutine(RunCode(sim, codeBlock));
-                                        yield return new WaitUntil(() => runComplete == true);         
+                                        startIndex = codeBlockEnd + 2;
+                                        nestedLevel = 0;
+                                        closedBraces = false;
+
+                                        for (int i = startIndex; i < CodeLines.Length; i++)
+                                        {
+                                            Debug.Log(CodeLines[i]);
+                                            endIndex = i;
+                                            subStrings = CodeLines[i].Split(' ', '\n');
+                                            firstItem = subStrings[0];
+                                            if (firstItem == "{")
+                                            {
+                                                nestedLevel++;
+                                            }
+
+                                            if (firstItem == "}")
+                                            {
+                                                if (nestedLevel == 1)
+                                                {
+                                                    Debug.Log("}");
+                                                    closedBraces = true;
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    nestedLevel--;
+                                                }
+                                            }
+                                        }
+
+                                        if (closedBraces)
+                                        {
+                                            Debug.Log(endIndex);
+                                            codeBlockEnd = endIndex;
+                                            for (int i = startIndex; i < endIndex; i++)
+                                            {
+                                                elseBlock += CodeLines[i] + '\n';
+                                            }
+
+                                            Debug.Log(elseBlock);
+
+                                            Debug.Log(conditionMet);
+                                            if (conditionMet)
+                                            {
+                                                StartCoroutine(RunCode(sim, codeBlock));
+                                                yield return new WaitUntil(() => runComplete == true);
+                                            }
+                                            else
+                                            {
+                                                StartCoroutine(RunCode(sim, elseBlock));
+                                                yield return new WaitUntil(() => runComplete == true);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //break error
+                                        }
                                     }
+                                    else
+                                    {
+                                        Debug.Log(conditionMet);
+                                        if (conditionMet)
+                                        {
+                                            StartCoroutine(RunCode(sim, codeBlock));
+                                            yield return new WaitUntil(() => runComplete == true);
+                                        }
+                                    }
+
 
                                     x = codeBlockEnd;
 
                                 }
                                 else
                                 {
-                                    SimPrintError("SYNTAX ERROR: 1");
+                                    SimPrintError("SYNTAX ERROR: Missing brace/s around if statement code.");
                                 }
-
                             }
                             else
                             {
                                 SimPrintError("SYNTAX ERROR: 2");
                             }
- 
-
                         }
                         //Check if the first item is whitespace or an unused character...
                         else if (firstItem == "" || firstItem == "{" || firstItem == "}" || firstItem == "//")
                         {
-                            Debug.Log("Not an error, just some whitespace.");
+                            //Debug.Log("Not an error, just some whitespace.");
                         }
                         //If first item is none of these, it is invalid and an error is thrown...
                         else
@@ -1138,6 +1203,7 @@ public class Player : SimulatedObject {
 
     string createBool(string name, string value)
     {
+        Debug.Log(value);
         if (value == "true" || value == "false")
         {
             Sim_Variable newBool = new Sim_Variable(name, "bool", value);
@@ -1471,3 +1537,78 @@ public class Player : SimulatedObject {
 
 
 
+/*Debug.Log("Entered sim if");
+
+                            string codeBlock = "";
+int codeBlockEnd;
+
+subStrings = remainder.Split(' ', '(' , ')');
+
+                            firstItem = subStrings[0];
+
+                            bool conditionMet = RunSimComparisons(subStrings);
+
+subStrings = CodeLines[x + 1].Split(' ', '\n');
+firstItem = subStrings[0];
+                            Debug.Log(firstItem);
+                            if(firstItem == "{")
+                            {
+                                Debug.Log("{");
+                                bool closedBraces = false;
+int startIndex = x + 1;
+int endIndex = x + 1;
+int nestedLevel = 0;
+                                for (int i = startIndex; i<CodeLines.Length; i++)
+                                {
+                                    Debug.Log(CodeLines[i]);
+                                    endIndex = i;
+                                    subStrings = CodeLines[i].Split(' ', '\n');
+firstItem = subStrings[0];
+                                    if(firstItem == "{")
+                                    {
+                                        nestedLevel++;
+                                    }
+
+                                    if (firstItem == "}")
+                                    {
+                                        if (nestedLevel == 1)
+                                        {
+                                            Debug.Log("}");
+                                            closedBraces = true;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            nestedLevel--;
+                                        }
+                                    }
+                                }
+
+                                if(closedBraces)
+                                {
+                                    codeBlockEnd = endIndex;
+                                    for(int i = startIndex; i<endIndex; i++)
+                                    {
+                                        codeBlock += CodeLines[i] + '\n';
+                                    }
+                                    Debug.Log(conditionMet);
+                                    if (conditionMet)
+                                    {
+                                        StartCoroutine(RunCode(sim, codeBlock));
+yield return new WaitUntil(() => runComplete == true);         
+                                    }
+
+                                    x = codeBlockEnd;
+
+                                }
+                                else
+                                {
+                                    SimPrintError("SYNTAX ERROR: 1");
+                                }
+
+                            }
+                            else
+                            {
+                                SimPrintError("SYNTAX ERROR: 2");
+                            }
+                            */

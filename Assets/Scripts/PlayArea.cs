@@ -6,7 +6,7 @@ public class PlayArea : MonoBehaviour {
 
     public Player player;
 
-    void OnTriggerExit(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
         {
