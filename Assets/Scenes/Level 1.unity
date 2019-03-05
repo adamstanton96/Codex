@@ -1719,7 +1719,7 @@ MonoBehaviour:
   - {fileID: 1188570694}
   - {fileID: 1771691495}
   - {fileID: 1789494846}
-  stage: 3
+  stage: 0
   collectiblesHeld: 0
 --- !u!54 &156691387
 Rigidbody:
@@ -6542,6 +6542,7 @@ MonoBehaviour:
   collectibles: []
   exitPoint: {fileID: 0}
   listDev: {fileID: 2041677327}
+  varTrack: {fileID: 0}
 --- !u!4 &694849557
 Transform:
   m_ObjectHideFlags: 0
@@ -15710,6 +15711,7 @@ MonoBehaviour:
   collectibles: []
   exitPoint: {fileID: 1128641215}
   listDev: {fileID: 0}
+  varTrack: {fileID: 0}
 --- !u!4 &1188570695
 Transform:
   m_ObjectHideFlags: 0
@@ -31160,6 +31162,7 @@ MonoBehaviour:
   - {fileID: 531882341}
   exitPoint: {fileID: 1384723339}
   listDev: {fileID: 0}
+  varTrack: {fileID: 0}
 --- !u!4 &1771691496
 Transform:
   m_ObjectHideFlags: 0
@@ -31479,6 +31482,7 @@ MonoBehaviour:
   - {fileID: 308939168}
   exitPoint: {fileID: 1341342581}
   listDev: {fileID: 0}
+  varTrack: {fileID: 0}
 --- !u!4 &1789494847
 Transform:
   m_ObjectHideFlags: 0

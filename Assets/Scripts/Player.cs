@@ -62,6 +62,12 @@ public class Player : SimulatedObject {
 
         Sim_Function _MoveWest = new Sim_Function("MoveWest", "", "void", "//Moves the player west one space.", MoveWest);
         simFunctions.Add(_MoveWest);
+
+        Sim_Function _GetCollectiblesHeld = new Sim_Function("GetCollectiblesHeld", "", "int", "//Returns a value equal to the number of collectibles held by the player.", GetCollectiblesHeld);
+        simFunctions.Add(_GetCollectiblesHeld);
+
+        Sim_Function _Move = new Sim_Function("Move", "string", "void", "//Moves the player in the direction passed to the function.", Move);
+        simFunctions.Add(_Move);
         /*
         Sim_Function _NextStage = new Sim_Function("NextStage", "", "void", "//For Debug.", NextStage);
         simFunctions.Add(_NextStage);
@@ -151,6 +157,79 @@ public class Player : SimulatedObject {
         //Debug.Log("Moving West");
         t.position = new Vector3(t.position.x - 1.0f, t.position.y, t.position.z);
         return "null";
+    }
+
+    string Move(string arg)
+    {
+        string value = "";
+        string[] temp = arg.Split(',', ')');
+        //if (temp.Length != 1)
+        //{
+        //    Debug.Log(temp[1]);
+        //    SimPrintError("SYNTAX ERROR: Incorrect number of parameters for function Move(), 1 expected - " + temp.Length + " provided");
+            //break error
+        //}
+        //else
+        //{
+            arg = temp[0];
+        //}
+
+        Debug.Log(arg);
+
+        Sim_Function function = FindSimFunction(arg, simFunctions);
+        if (function != null)
+        {
+            if (function.returnType == "string")
+            {
+                value = function.Call("");
+            }
+        }
+        else
+        {
+            //get the value of the variable.
+            Sim_Variable variable = FindSimVariable(arg, simVariables);
+            if (variable != null)
+            {
+                if (variable.type == "string")
+                {
+                    value = variable.value;
+                }
+                else
+                {
+                    Debug.Log("Variable is not a string");
+                }
+            }
+            else if (arg[0] == '\"' && arg[arg.Length - 1] == '\"')
+            {
+                string valString = arg.Trim('\"');
+                value = valString;
+            }
+            else
+            {
+                Debug.Log(value + " is an invalid value for a string variable.");
+                //break error
+            }
+        }
+
+        value = value.ToUpper();
+
+        if (value == "NORTH")
+            t.position = new Vector3(t.position.x, t.position.y, t.position.z + 1.0f);
+        else if (value == "SOUTH")
+            t.position = new Vector3(t.position.x, t.position.y, t.position.z - 1.0f);
+        else if (value == "EAST")
+            t.position = new Vector3(t.position.x + 1.0f, t.position.y, t.position.z);
+        else if (value == "WEST")
+            t.position = new Vector3(t.position.x - 1.0f, t.position.y, t.position.z);
+        else
+            SimPrintStatement("MINOR LOGIC ERROR: The value passed to Move() is invalid, must correspond to a direction.");
+            //break 
+        return "null";
+    }
+
+    string GetCollectiblesHeld(string arg)
+    {
+        return collectiblesHeld.ToString();
     }
 
     string NextStage(string arg)
@@ -703,29 +782,63 @@ public class Player : SimulatedObject {
         return "";
     }
 
+
+
     string performStringOperations(Sim_Variable var, string remainder)
     {
-
         string[] subStrings = remainder.Split(' ', ';');
         remainder = concatenateSplitString(1, subStrings, " ");
 
         if (subStrings[0] == "=")
         {
+            string value = "";
+
+            Sim_Function function = FindSimFunction(remainder, simFunctions);
+            if (function != null)
+            {
+                if (function.returnType == "string")
+                {
+                    value = function.Call("");
+                }
+            }
+            else
+            {
+                //get the value of the variable.
+                Sim_Variable variable = FindSimVariable(remainder, simVariables);
+                if (variable != null)
+                {
+                    if (variable.type == "string")
+                    {
+                        value = variable.value;
+                    }
+                    else
+                    {
+                        Debug.Log("Variable is not a string");
+                    }
+                }
+                else if (remainder[0] == '\"' && remainder[remainder.Length - 1] == '\"')
+                {
+                    string valString = remainder.Trim('\"');
+                    value = valString;
+                }
+                else
+                {
+                    Debug.Log(remainder + " is an invalid value for a character variable.");
+                    //break error
+                }
+            }
+
             Debug.Log(remainder);
             Debug.Log("BEFORE: " + var.value);
-            var.value = recursiveIntOperations(remainder).ToString();
+            var.value = value;
             Debug.Log("AFTER: " + var.value);
+
         }
-        else if (subStrings[0] == "+=")
-        {
-            int temp;
-            int.TryParse(var.value, out temp);
-            var.value = (temp + recursiveIntOperations(remainder)).ToString();
-        }
-        
 
         return "";
     }
+
+
 
     string performCharOperations(Sim_Variable var, string remainder)
     {
@@ -734,20 +847,54 @@ public class Player : SimulatedObject {
 
         if (subStrings[0] == "=")
         {
+            string value = "";
+
+            Sim_Function function = FindSimFunction(remainder, simFunctions);
+            if (function != null)
+            {
+                if (function.returnType == "char")
+                {
+                    value = function.Call("");
+                }
+            }
+            else
+            {
+                //get the value of the variable.
+                Sim_Variable variable = FindSimVariable(remainder, simVariables);
+                if (variable != null)
+                {
+                    if (variable.type == "char")
+                    {
+                        value = variable.value;
+                    }
+                    else
+                    {
+                        Debug.Log("Variable is not an character");
+                    }
+                }
+                else if (remainder.Length == 3)
+                {
+                    if (remainder[0] == '\'' && remainder[0] == '\'')
+                        value = remainder[1].ToString();
+                }
+                else
+                {
+                    Debug.Log(remainder + " is an invalid value for a character variable.");
+                    //break error
+                }
+            }
+
             Debug.Log(remainder);
             Debug.Log("BEFORE: " + var.value);
-            if (remainder == "true")
-                var.value = "true";
-            else if (remainder == "false")
-                var.value = "false";
-            else
-                Debug.Log(remainder + " is an invalid value for a boolean variable.");
-
+            var.value = value;
             Debug.Log("AFTER: " + var.value);
+
         }
         
         return "";
     }
+
+
 
     string performBoolOperations(Sim_Variable var, string remainder)
     {
@@ -756,16 +903,56 @@ public class Player : SimulatedObject {
 
         if (subStrings[0] == "=")
         {
+            string value = "";
+
+            Sim_Function function = FindSimFunction(remainder, simFunctions);
+            if (function != null)
+            {
+                if (function.returnType == "bool")
+                {
+                    value = function.Call("");
+                }
+            }
+            else
+            {
+                //get the value of the variable.
+                Sim_Variable variable = FindSimVariable(remainder, simVariables);
+                if (variable != null)
+                {
+                    if (variable.type == "bool")
+                    {
+                        value = variable.value;
+                    }
+                    else
+                    {
+                        Debug.Log("Variable is not an integer");
+                    }
+                }
+                else if (remainder == "true")
+                {
+                    value = "true";
+                }
+                else if (remainder == "false")
+                {
+                    value = "false";
+                }
+                else
+                {
+                    Debug.Log(remainder + " is an invalid value for a boolean variable.");
+                    //break error
+                }
+            }
+
+
+
             Debug.Log(remainder);
             Debug.Log("BEFORE: " + var.value);
-            if (remainder == "true")
-                var.value = "true";
-            else if (remainder == "false")
-                var.value = "false";
-            else
-                Debug.Log(remainder + " is an invalid value for a boolean variable.");
-
+            var.value = value;
             Debug.Log("AFTER: " + var.value);
+        }
+        else
+        {
+            //break error
         }
 
         return "";
@@ -777,31 +964,46 @@ public class Player : SimulatedObject {
 
     int recursiveIntOperations(string items)
     {
-        int returnVal;
+        int returnVal = 0;
 
         string[] subStrings = items.Split(' ', ';');
         string varID = subStrings[0];
 
-        //get the value of the variable.
-        Sim_Variable variable = FindSimVariable(varID, simVariables);
-        if (variable != null)
+        Sim_Function function = FindSimFunction(varID, simFunctions);
+        if (function != null)
         {
-            if (isInt(variable))
+            if (function.returnType == "int")
             {
-                if (!int.TryParse(variable.value, out returnVal))
+                string funcVal = function.Call("");
+                if (!int.TryParse(funcVal, out returnVal))
                 {
                     //break error
                 }
             }
-            else
-            {
-                Debug.Log("Variable is not an integer");
-                return 0;
-            }
         }
-        else if (!int.TryParse(varID, out returnVal))
-        {
-            //break error
+        else
+        { 
+            //get the value of the variable.
+            Sim_Variable variable = FindSimVariable(varID, simVariables);
+            if (variable != null)
+            {
+                if (isInt(variable))
+                {
+                    if (!int.TryParse(variable.value, out returnVal))
+                    {
+                        //break error
+                    }
+                }
+                else
+                {
+                    Debug.Log("Variable is not an integer");
+                    return 0;
+                }
+            }
+            else if (!int.TryParse(varID, out returnVal))
+            {
+                //break error
+            }
         }
 
         if (subStrings.Length > 1)
@@ -879,7 +1081,7 @@ public class Player : SimulatedObject {
         if (value[0] == '\"' && value[length-1] == '\"')
         {
             Debug.Log("Before" + value);
-            value.Trim('"');
+            value = value.Trim('\"');
             Debug.Log("After" + value);
             createString(name, value.ToString());
         }
@@ -1240,6 +1442,11 @@ public class Player : SimulatedObject {
     {
         this.outputString = this.outputString + error + '\n';
         StopAllCoroutines();
+    }
+
+    public void SimPrintStatement(string statement)
+    {
+        this.outputString = this.outputString + statement + '\n';
     }
 
     public override string ToString()
