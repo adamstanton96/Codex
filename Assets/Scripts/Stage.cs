@@ -10,6 +10,10 @@ public class Stage : MonoBehaviour {
     public ExitPoint exitPoint;
     public ListeningDevice listDev;
     public VariableTracker varTrack;
+    public string MapDirection = "No Map";
+
+    public string[] hints;
+    int hintIndex = 0;
 
     // Use this for initialization
     void Start ()
@@ -23,8 +27,19 @@ public class Stage : MonoBehaviour {
 		
 	}
 
+    public string GetHint()
+    {
+        string returnString = hints[hintIndex];
+        Debug.Log(returnString);
+        if(hintIndex < hints.Length - 1)
+            hintIndex++;
+        return returnString;
+    }
+
+
     public void RefreshStage()
     {
+        hintIndex = 0;
         popupDialog.gameObject.SetActive(true);
         popupDialog.Init();
         ResetCollectibles();

@@ -63,11 +63,14 @@ public class Player : SimulatedObject {
         Sim_Function _MoveWest = new Sim_Function("MoveWest", "", "void", "//Moves the player west one space.", MoveWest);
         simFunctions.Add(_MoveWest);
 
+        Sim_Function _Move = new Sim_Function("Move", "string", "void", "//Moves the player in the direction passed to the function.", Move);
+        simFunctions.Add(_Move);
+
         Sim_Function _GetCollectiblesHeld = new Sim_Function("GetCollectiblesHeld", "", "int", "//Returns a value equal to the number of collectibles held by the player.", GetCollectiblesHeld);
         simFunctions.Add(_GetCollectiblesHeld);
 
-        Sim_Function _Move = new Sim_Function("Move", "string", "void", "//Moves the player in the direction passed to the function.", Move);
-        simFunctions.Add(_Move);
+        Sim_Function _GetMapDirection = new Sim_Function("GetMapDirection", "", "string", "//Returns a string pointing out the direction of the correct path (North, South, East, West).", GetMapDirection);
+        simFunctions.Add(_GetMapDirection);
         /*
         Sim_Function _NextStage = new Sim_Function("NextStage", "", "void", "//For Debug.", NextStage);
         simFunctions.Add(_NextStage);
@@ -122,7 +125,10 @@ public class Player : SimulatedObject {
     }
 
 
-
+    public void DisplayHint()
+    {
+        SimPrintStatement(stages[stage].GetHint());
+    }
 
 
     //////////////////////////////////////
@@ -225,6 +231,11 @@ public class Player : SimulatedObject {
             SimPrintStatement("MINOR LOGIC ERROR: The value passed to Move() is invalid, must correspond to a direction.");
             //break 
         return "null";
+    }
+
+    string GetMapDirection(string arg)
+    {
+        return stages[stage].MapDirection;
     }
 
     string GetCollectiblesHeld(string arg)
@@ -556,7 +567,7 @@ public class Player : SimulatedObject {
                                         }
                                         else
                                         {
-                                            //break error
+                                            SimPrintError("SYNTAX ERROR: Missing brace/s around else statement code.");
                                         }
                                     }
                                     else
@@ -586,7 +597,7 @@ public class Player : SimulatedObject {
                         //Check if the first item is whitespace or an unused character...
                         else if (firstItem == "" || firstItem == "{" || firstItem == "}" || firstItem == "//")
                         {
-                            //Debug.Log("Not an error, just some whitespace.");
+                            Debug.Log("Not an error, just some whitespace.");
                         }
                         //If first item is none of these, it is invalid and an error is thrown...
                         else
@@ -706,6 +717,9 @@ public class Player : SimulatedObject {
 
     Sim_Function FindSimFunction(string name, List<Sim_Function> list)
     {
+        string[] subStrings = name.Split('(', ' ', ')');
+        name = subStrings[0];
+
         Sim_Function func = null;
         for (int i = 0; i < list.Count; i++)
         {
@@ -853,6 +867,11 @@ public class Player : SimulatedObject {
     {
         string[] subStrings = remainder.Split(' ', ';');
         remainder = concatenateSplitString(1, subStrings, " ");
+
+        while (remainder[remainder.Length - 1] == ' ')
+            remainder = remainder.TrimEnd(' ');
+
+        Debug.Log(remainder);
 
         if (subStrings[0] == "=")
         {
@@ -1113,7 +1132,6 @@ public class Player : SimulatedObject {
 
     string createInt(string remainder)
     {
-
         string[] subStrings = remainder.Split(' ');
         remainder = concatenateSplitString(1, subStrings, " ");
         //Debug.Log(remainder);
@@ -1136,6 +1154,17 @@ public class Player : SimulatedObject {
 
     string createString(string remainder)
     {
+        string[] subStrings = remainder.Split(' ');
+        remainder = concatenateSplitString(1, subStrings, " ");
+        //Debug.Log(remainder);
+        Sim_Variable newString = new Sim_Variable(subStrings[0], "string", "");
+        performStringOperations(newString, remainder);
+        //Debug.Log(newInt.ToString());
+
+        createString(newString.name, newString.value);
+
+        return "";
+        /*
         string[] subStrings = remainder.Split(' ', ';');
         Debug.Log(subStrings[2]);
 
@@ -1154,7 +1183,7 @@ public class Player : SimulatedObject {
         {
             //error
         }
-
+        */
         return "";
     }
 

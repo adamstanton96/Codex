@@ -31,16 +31,19 @@ public class ExitPoint : MonoBehaviour
         Debug.Log(player.stage);
         if (player.stage < player.stages.Count)
         {
-            player.stage++;
-            //player.SetupStage();
-            if (popup != null)
+            if (player.collectiblesHeld >= player.stages[player.stage].collectibles.Count)
             {
-                Debug.Log("Making Popup Active");
-                popup.SetActive(true);
-            }
-            else
-            {
-                Debug.Log("No Popup Found.");
+                player.stage++;
+                //player.SetupStage();
+                if (popup != null)
+                {
+                    Debug.Log("Making Popup Active");
+                    popup.SetActive(true);
+                }
+                else
+                {
+                    Debug.Log("No Popup Found.");
+                }
             }
         }
         else

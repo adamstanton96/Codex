@@ -1719,7 +1719,7 @@ MonoBehaviour:
   - {fileID: 1188570694}
   - {fileID: 1771691495}
   - {fileID: 1789494846}
-  stage: 0
+  stage: 2
   collectiblesHeld: 0
 --- !u!54 &156691387
 Rigidbody:
@@ -6613,6 +6613,11 @@ MonoBehaviour:
   exitPoint: {fileID: 0}
   listDev: {fileID: 2041677327}
   varTrack: {fileID: 0}
+  MapDirection: No Map
+  hints:
+  - // Use printf to print "Hello World"
+  - // Use printf("Hello World")
+  - printf("Hello World");
 --- !u!4 &694849557
 Transform:
   m_ObjectHideFlags: 0
@@ -14957,7 +14962,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1085151629}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 156691386}
+        m_MethodName: DisplayHint
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &1085151629
@@ -15828,6 +15844,11 @@ MonoBehaviour:
   exitPoint: {fileID: 1128641215}
   listDev: {fileID: 0}
   varTrack: {fileID: 0}
+  MapDirection: No Map
+  hints:
+  - // Use the MoveNorth function to move north.
+  - // Call MoveNorth()
+  - MoveNorth();
 --- !u!4 &1188570695
 Transform:
   m_ObjectHideFlags: 0
@@ -31398,6 +31419,13 @@ MonoBehaviour:
   exitPoint: {fileID: 1384723339}
   listDev: {fileID: 0}
   varTrack: {fileID: 0}
+  MapDirection: No Map
+  hints:
+  - // Use MoveWest to collect the key. \r\n// Use MoveEast and MoveNorth to reach
+    to the ladder.
+  - // Call MoveWest() three times.\n// Call MoveEast() twice.\n//Call MoveNorth()
+    once.
+  - MoveWest();\nMoveWest();\nMoveWest();\nMoveEast();\nMoveEast();\nMoveNorth();
 --- !u!4 &1771691496
 Transform:
   m_ObjectHideFlags: 0
@@ -31718,6 +31746,8 @@ MonoBehaviour:
   exitPoint: {fileID: 1341342581}
   listDev: {fileID: 0}
   varTrack: {fileID: 0}
+  MapDirection: No Map
+  hints: []
 --- !u!4 &1789494847
 Transform:
   m_ObjectHideFlags: 0
