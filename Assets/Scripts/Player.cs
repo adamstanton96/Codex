@@ -929,6 +929,9 @@ public class Player : SimulatedObject {
         string[] subStrings = remainder.Split(' ', ';');
         remainder = concatenateSplitString(1, subStrings, " ");
 
+        while (remainder[remainder.Length - 1] == ' ')
+            remainder = remainder.TrimEnd(' ');
+
         if (subStrings[0] == "=")
         {
             string value = "";
@@ -939,6 +942,10 @@ public class Player : SimulatedObject {
                 if (function.returnType == "char")
                 {
                     value = function.Call("");
+                }
+                else
+                {
+                    //break error
                 }
             }
             else
@@ -953,13 +960,20 @@ public class Player : SimulatedObject {
                     }
                     else
                     {
+                        //break error
                         Debug.Log("Variable is not an character");
                     }
                 }
                 else if (remainder.Length == 3)
                 {
                     if (remainder[0] == '\'' && remainder[0] == '\'')
+                    {
                         value = remainder[1].ToString();
+                    }
+                    else
+                    {
+                        //break error
+                    }
                 }
                 else
                 {
@@ -985,6 +999,11 @@ public class Player : SimulatedObject {
         string[] subStrings = remainder.Split(' ', ';');
         remainder = concatenateSplitString(1, subStrings, " ");
 
+        while(remainder[remainder.Length - 1] == ' ')
+        {
+            remainder = remainder.TrimEnd(' ');
+        }
+
         if (subStrings[0] == "=")
         {
             string value = "";
@@ -995,6 +1014,10 @@ public class Player : SimulatedObject {
                 if (function.returnType == "bool")
                 {
                     value = function.Call("");
+                }
+                else
+                {
+                    //break error
                 }
             }
             else
@@ -1147,8 +1170,15 @@ public class Player : SimulatedObject {
     string createBool(string remainder)
     {
         string[] subStrings = remainder.Split(' ', ';');
+        remainder = concatenateSplitString(1, subStrings, " ");
         Debug.Log(subStrings[2]);
-        createBool(subStrings[0], subStrings[2]);
+
+        Sim_Variable newBool = new Sim_Variable(subStrings[0], "bool", "false");
+        Debug.Log(remainder);
+        performBoolOperations(newBool, remainder);
+
+        createBool(newBool.name, newBool.value);
+        //createBool(subStrings[0], subStrings[2]);
         return "";
     }
 
@@ -1163,7 +1193,6 @@ public class Player : SimulatedObject {
 
         createString(newString.name, newString.value);
 
-        return "";
         /*
         string[] subStrings = remainder.Split(' ', ';');
         Debug.Log(subStrings[2]);
@@ -1189,6 +1218,16 @@ public class Player : SimulatedObject {
 
     string createChar(string remainder)
     {
+        string[] subStrings = remainder.Split(' ');
+        remainder = concatenateSplitString(1, subStrings, " ");
+        //Debug.Log(remainder);
+        Sim_Variable newChar = new Sim_Variable(subStrings[0], "char", "");
+        performCharOperations(newChar, remainder);
+        //Debug.Log(newInt.ToString());
+
+        createChar(newChar.name, newChar.value);
+
+        /*
         string[] subStrings = remainder.Split(' ', ';');
         //remainder = concatenateSplitString(1, subStrings, " ");
         Debug.Log(subStrings[2]);
@@ -1211,7 +1250,7 @@ public class Player : SimulatedObject {
         {
             //error
         }
-
+        */
         return "";
     }
 
