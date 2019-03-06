@@ -810,7 +810,10 @@ public class Player : SimulatedObject {
         string[] subStrings = remainder.Split(' ', ';');
         remainder = concatenateSplitString(1, subStrings, " ");
 
-        if(subStrings[0] == "=")
+        while (remainder[remainder.Length - 1] == ' ')
+            remainder = remainder.TrimEnd(' ');
+
+        if (subStrings[0] == "=")
         {
             //Debug.Log(remainder);
             //Debug.Log("BEFORE: " + var.value);
@@ -999,10 +1002,8 @@ public class Player : SimulatedObject {
         string[] subStrings = remainder.Split(' ', ';');
         remainder = concatenateSplitString(1, subStrings, " ");
 
-        while(remainder[remainder.Length - 1] == ' ')
-        {
+        while (remainder[remainder.Length - 1] == ' ')
             remainder = remainder.TrimEnd(' ');
-        }
 
         if (subStrings[0] == "=")
         {
